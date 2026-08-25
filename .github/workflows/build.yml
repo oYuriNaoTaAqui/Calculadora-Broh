@@ -7,24 +7,44 @@ on:
       - main
 
 jobs:
-  build-android:
+  build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
 
       - name: Baixar projeto
         uses: actions/checkout@v4
 
-      - name: Compilar APK
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          workdir: .
-          buildozer_version: stable
+      - name: Instalar dependências
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            python3-pip \
+            python3-venv \
+            git \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            autoconf \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libtinfo5
 
-      - name: Salvar APK
+      - name: Instalar Buildozer
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install buildozer cython
+
+      - name: Compilar APK
+        run: |
+          buildozer android debug
+
+      - name: Enviar APK
         uses: actions/upload-artifact@v4
         with:
           name: Calculadora-Equacoes-APK
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
