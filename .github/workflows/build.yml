@@ -25,9 +25,21 @@ jobs:
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          packages: |
+            platform-tools
+            platforms;android-35
+            build-tools;35.0.0
+            cmdline-tools;latest
 
-      - name: Instalar dependências do sistema
+      - name: Verificar Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          echo "Verificando AIDL..."
+          ls -la "$ANDROID_HOME/build-tools/35.0.0/"
+          "$ANDROID_HOME/build-tools/35.0.0/aidl" --version
+
+      - name: Instalar dependências
         run: |
           sudo apt update
           sudo apt install -y \
