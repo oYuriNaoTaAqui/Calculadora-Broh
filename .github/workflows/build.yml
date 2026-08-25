@@ -20,12 +20,18 @@ jobs:
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Instalar ferramentas Android
+      - name: Instalar Android SDK
         run: |
           sdkmanager "platform-tools"
           sdkmanager "platforms;android-34"
           sdkmanager "build-tools;34.0.0"
+
           yes | sdkmanager --licenses || true
+
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+
+          find "$ANDROID_HOME" -name aidl -type f
 
       - name: Instalar Python
         uses: actions/setup-python@v5
@@ -36,6 +42,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install buildozer cython
+
+      - name: Configurar caminho do Android SDK
+        run: |
+          echo "ANDROIDSDK=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
 
       - name: Compilar APK
         run: |
