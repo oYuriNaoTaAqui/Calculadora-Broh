@@ -1,13 +1,17 @@
-name: Gerar APK
+name: Build APK
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
+
       - name: Baixar código
         uses: actions/checkout@v4
 
@@ -17,59 +21,104 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Instalar Android SDK
-        run: |
-          yes | sdkmanager --licenses || true
-
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-34"
-          sdkmanager "build-tools;34.0.0"
-          sdkmanager "cmdline-tools;latest"
-
-      - name: Configurar Android para o Buildozer
-        run: |
-          echo "ANDROIDSDK=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/build-tools/34.0.0" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-
-      - name: Verificar AIDL
-        run: |
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          echo "ANDROIDSDK=$ANDROIDSDK"
-
-          ls -la "$ANDROID_SDK_ROOT/build-tools/34.0.0"
-
-          test -f "$ANDROID_SDK_ROOT/build-tools/34.0.0/aidl"
-
-          echo "AIDL encontrado com sucesso!"
-
-      - name: Instalar Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Instalar Buildozer
+      - name: Instalar dependências
         run: |
           python -m pip install --upgrade pip
-          python -m pip install buildozer cython
+          pip install buildozer cython==0.29.37
 
-      - name: Limpar Buildozer antigo
+      - name: Preparar diretório do Buildozer
         run: |
-          rm -rf .buildozer
+          mkdir -p "$HOME/.buildozer/android/platform"
+          export SDK="$HOME/.buildozer/android/platform/android-sdk"
+          mkdir -p "$SDK"
+
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK/build-tools/34.0.0" >> "$GITHUB_PATH"
+
+      - name: Instalar Android SDK
+        run: |
+          SDK="$HOME/.buildozer/android/platform/android-sdk"
+
+          mkdir -p "$SDK/cmdline-tools"
+
+          cd "$SDK/cmdline-tools"
+
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+
+          unzip -q commandlinetools-linux-11076708_latest.zip
+
+          rm -rf latest
+          mv cmdline-tools latest
+
+          export ANDROID_HOME="$SDK"
+          export ANDROID_SDK_ROOT="$SDK"
+          export PATH="$SDK/cmdline-tools/latest/bin:$SDK/platform-tools:$PATH"
+
+          yes | sdkmanager --licenses > /dev/null || true
+
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+          yes | sdkmanager --licenses > /dev/null || true
+
+      - name: Aceitar licenças no SDK do Buildozer
+        run: |
+          SDK="$HOME/.buildozer/android/platform/android-sdk"
+
+          export ANDROID_HOME="$SDK"
+          export ANDROID_SDK_ROOT="$SDK"
+          export PATH="$SDK/cmdline-tools/latest/bin:$SDK/platform-tools:$SDK/build-tools/34.0.0:$PATH"
+
+          yes | sdkmanager --licenses || true
+
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+      - name: Verificar AIDL
+        run: |
+          SDK="$HOME/.buildozer/android/platform/android-sdk"
+
+          echo "SDK:"
+          echo "$SDK"
+
+          echo "Build Tools:"
+          ls -la "$SDK/build-tools/34.0.0"
+
+          echo "Verificando AIDL..."
+
+          test -f "$SDK/build-tools/34.0.0/aidl"
+
+          echo "AIDL encontrado!"
+
+          "$SDK/build-tools/34.0.0/aidl" --help > /dev/null || true
 
       - name: Compilar APK
         run: |
+          export ANDROID_HOME="$HOME/.buildozer/android/platform/android-sdk"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/34.0.0:$PATH"
+
+          yes | sdkmanager --licenses || true
+
+          buildozer android clean
+
           buildozer android debug
 
       - name: Salvar APK
         uses: actions/upload-artifact@v4
         with:
-          name: Calculadora-APK
+          name: calculadora-apk
           path: bin/*.apk
+          if-no-files-found: error
