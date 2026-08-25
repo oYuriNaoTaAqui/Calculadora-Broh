@@ -16,7 +16,18 @@ jobs:
       - name: Baixar projeto
         uses: actions/checkout@v4
 
-      - name: Instalar dependências
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
+      - name: Instalar dependências do sistema
         run: |
           sudo apt update
           sudo apt install -y \
@@ -25,14 +36,12 @@ jobs:
             git \
             zip \
             unzip \
-            openjdk-17-jdk \
             autoconf \
             libtool \
             pkg-config \
             zlib1g-dev \
             libncurses5-dev \
-            libncursesw5-dev \
-            libtinfo5
+            libncursesw5-dev
 
       - name: Instalar Buildozer
         run: |
@@ -43,7 +52,7 @@ jobs:
         run: |
           buildozer android debug
 
-      - name: Enviar APK
+      - name: Salvar APK
         uses: actions/upload-artifact@v4
         with:
           name: Calculadora-Equacoes-APK
