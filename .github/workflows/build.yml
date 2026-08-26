@@ -20,12 +20,15 @@ jobs:
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Aceitar licenças Android
+        run: |
+          yes | sdkmanager --licenses || true
+
       - name: Instalar ferramentas Android
         run: |
           sdkmanager "platform-tools"
           sdkmanager "platforms;android-34"
           sdkmanager "build-tools;34.0.0"
-          yes | sdkmanager --licenses || true
 
       - name: Instalar Python
         uses: actions/setup-python@v5
@@ -37,12 +40,56 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install buildozer cython
 
+      - name: Limpar build anterior
+        run: |
+          rm -rf .buildozer
+          rm -rf bin
+
+      - name: Investigar charset-normalizer
+        run: |
+          echo "=========================================="
+          echo "PROCURANDO requirements.txt"
+          echo "=========================================="
+
+          find . -name "requirements.txt" -type f \
+            -not -path "./.git/*" \
+            -not -path "./.buildozer/*" \
+            -not -path "./bin/*" \
+            -print
+
+          echo ""
+          echo "=========================================="
+          echo "PROCURANDO charset-normalizer NO PROJETO"
+          echo "=========================================="
+
+          grep -Rni "charset-normalizer" . \
+            --exclude-dir=.git \
+            --exclude-dir=.buildozer \
+            --exclude-dir=bin \
+            || true
+
+          echo ""
+          echo "=========================================="
+          echo "REQUIREMENTS DO BUILDOZER.SPEC"
+          echo "=========================================="
+
+          grep -n "requirements" buildozer.spec || true
+
+          echo ""
+          echo "=========================================="
+          echo "BUILDOZER.SPEC - CONFIGURAÇÕES ANDROID"
+          echo "=========================================="
+
+          grep -nE "android.api|android.minapi|android.ndk_api|android.ndk" \
+            buildozer.spec || true
+
       - name: Compilar APK
         run: |
-          buildozer android debug
+          buildozer -v android debug
 
       - name: Salvar APK
         uses: actions/upload-artifact@v4
         with:
           name: Calculadora-APK
           path: bin/*.apk
+          if-no-files-found: error
