@@ -507,6 +507,9 @@ class AppEquacoes(App):
 
         Window.clearcolor = FUNDO
 
+        # Faz a interface subir quando o teclado virtual aparecer
+        Window.softinput_mode = "pan"
+
         return CalculadoraEquacoes()
 
 
