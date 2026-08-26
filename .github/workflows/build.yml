@@ -8,48 +8,34 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-
       - name: Baixar código
         uses: actions/checkout@v4
 
-      - name: Configurar Python
-        uses: actions/setup-python@v7
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar ferramentas Android
+        run: |
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-34"
+          sdkmanager "build-tools;34.0.0"
+          yes | sdkmanager --licenses || true
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Configurar Java
-        uses: actions/setup-java@v5
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Instalar dependências do Linux
-        run: |
-          sudo apt update
-          sudo apt install -y \
-            git \
-            zip \
-            unzip \
-            autoconf \
-            automake \
-            libtool \
-            libltdl-dev \
-            pkg-config \
-            zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libffi-dev \
-            libssl-dev
 
       - name: Instalar Buildozer
         run: |
           python -m pip install --upgrade pip
           python -m pip install buildozer cython
-
-      - name: Limpar ambiente anterior
-        run: |
-          rm -rf .buildozer
-          rm -rf bin
 
       - name: Compilar APK
         run: |
@@ -60,4 +46,3 @@ jobs:
         with:
           name: Calculadora-APK
           path: bin/*.apk
-          if-no-files-found: error
