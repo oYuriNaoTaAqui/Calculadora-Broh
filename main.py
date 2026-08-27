@@ -222,7 +222,6 @@ def calcular_area(figura, valores):
             f"A = {formatar_numero(area)}"
         )
 
-
     elif figura == "Retângulo":
 
         base = float(valores[0])
@@ -240,7 +239,6 @@ def calcular_area(figura, valores):
             f"{formatar_numero(altura)}\n"
             f"A = {formatar_numero(area)}"
         )
-
 
     elif figura == "Triângulo":
 
@@ -261,7 +259,6 @@ def calcular_area(figura, valores):
             f"A = {formatar_numero(area)}"
         )
 
-
     elif figura == "Círculo":
 
         raio = float(valores[0])
@@ -278,7 +275,6 @@ def calcular_area(figura, valores):
             f"A = π × {formatar_numero(raio ** 2)}\n"
             f"A ≈ {formatar_numero(area)}"
         )
-
 
     elif figura == "Paralelogramo":
 
@@ -297,7 +293,6 @@ def calcular_area(figura, valores):
             f"{formatar_numero(altura)}\n"
             f"A = {formatar_numero(area)}"
         )
-
 
     elif figura == "Trapézio":
 
@@ -321,7 +316,6 @@ def calcular_area(figura, valores):
             f"A = {formatar_numero(area)}"
         )
 
-
     else:
         raise ValueError
 
@@ -329,7 +323,7 @@ def calcular_area(figura, valores):
 
 
 # ============================================================
-# PAINEL ARREDONDADO
+# PAINEL
 # ============================================================
 
 class Painel(BoxLayout):
@@ -496,6 +490,72 @@ class BotaoCalculo(Button):
 
 
 # ============================================================
+# BOTÃO CALCULADORA
+# ============================================================
+
+class BotaoCalculadora(Button):
+
+    def __init__(self, tipo="numero", **kwargs):
+
+        super().__init__(**kwargs)
+
+        self.background_normal = ""
+        self.background_down = ""
+
+        self.tipo = tipo
+
+        if tipo == "igual":
+
+            self.background_color = DESTAQUE
+            self.color = (0.02, 0.02, 0.025, 1)
+
+        elif tipo == "operador":
+
+            self.background_color = PAINEL_2
+            self.color = DESTAQUE
+
+        elif tipo == "funcao":
+
+            self.background_color = PAINEL_2
+            self.color = CLARO
+
+        else:
+
+            self.background_color = CAMPO
+            self.color = BRANCO
+
+        self.font_size = sp(25)
+        self.bold = True
+
+        self.bind(
+            state=self.mudar_estado
+        )
+
+    def mudar_estado(self, instance, estado):
+
+        if estado == "down":
+
+            if self.tipo == "igual":
+                self.background_color = DESTAQUE_DOWN
+            else:
+                self.background_color = CINZA_ESCURO
+
+        else:
+
+            if self.tipo == "igual":
+                self.background_color = DESTAQUE
+
+            elif self.tipo == "operador":
+                self.background_color = PAINEL_2
+
+            elif self.tipo == "funcao":
+                self.background_color = PAINEL_2
+
+            else:
+                self.background_color = CAMPO
+
+
+# ============================================================
 # BOTÃO EXEMPLO
 # ============================================================
 
@@ -509,9 +569,7 @@ class BotaoExemplo(Button):
         self.background_down = ""
 
         self.background_color = PAINEL_2
-
         self.color = CLARO
-
         self.font_size = sp(11)
 
         self.bind(
@@ -527,7 +585,7 @@ class BotaoExemplo(Button):
 
 
 # ============================================================
-# LINHA DECORATIVA
+# LINHA
 # ============================================================
 
 class LinhaDecorativa(Widget):
@@ -576,7 +634,275 @@ class LinhaDecorativa(Widget):
 
 
 # ============================================================
-# INTERFACE
+# CALCULADORA COMUM
+# ============================================================
+
+class CalculadoraComum(BoxLayout):
+
+    def __init__(self, voltar_callback=None, **kwargs):
+
+        super().__init__(
+            orientation="vertical",
+            spacing=dp(8),
+            padding=[
+                dp(12),
+                dp(10),
+                dp(12),
+                dp(10)
+            ],
+            **kwargs
+        )
+
+        self.voltar_callback = voltar_callback
+
+        self.expressao = ""
+        self.resultado = ""
+
+        # ====================================================
+        # CABEÇALHO
+        # ====================================================
+
+        topo = BoxLayout(
+            orientation="horizontal",
+            size_hint_y=None,
+            height=dp(42),
+            spacing=dp(8)
+        )
+
+        botao_voltar = Button(
+            text="‹",
+            size_hint_x=None,
+            width=dp(48),
+            background_normal="",
+            background_down="",
+            background_color=PAINEL_2,
+            color=BRANCO,
+            font_size=sp(28)
+        )
+
+        botao_voltar.bind(
+            on_release=self.voltar
+        )
+
+        topo.add_widget(botao_voltar)
+
+        titulo = Label(
+            text="CALCULADORA",
+            font_size=sp(21),
+            bold=True,
+            color=BRANCO,
+            halign="left",
+            valign="middle"
+        )
+
+        titulo.bind(
+            size=lambda obj, value:
+            setattr(obj, "text_size", value)
+        )
+
+        topo.add_widget(titulo)
+
+        self.add_widget(topo)
+
+        # ====================================================
+        # DISPLAY
+        # ====================================================
+
+        self.display = Label(
+            text="0",
+            font_size=sp(42),
+            bold=True,
+            color=BRANCO,
+            halign="right",
+            valign="bottom",
+            size_hint_y=None,
+            height=dp(115)
+        )
+
+        self.display.bind(
+            size=lambda obj, value:
+            setattr(obj, "text_size", value)
+        )
+
+        self.add_widget(self.display)
+
+        # ====================================================
+        # LINHA DE BOTÕES
+        # ====================================================
+
+        botoes = [
+            [
+                ("AC", "funcao"),
+                ("⌫", "funcao"),
+                ("%", "operador"),
+                ("÷", "operador")
+            ],
+            [
+                ("7", "numero"),
+                ("8", "numero"),
+                ("9", "numero"),
+                ("×", "operador")
+            ],
+            [
+                ("4", "numero"),
+                ("5", "numero"),
+                ("6", "numero"),
+                ("−", "operador")
+            ],
+            [
+                ("1", "numero"),
+                ("2", "numero"),
+                ("3", "numero"),
+                ("+", "operador")
+            ],
+            [
+                ("0", "numero"),
+                (".", "numero"),
+                ("=", "igual"),
+            ]
+        ]
+
+        self.grade = BoxLayout(
+            orientation="vertical",
+            spacing=dp(7)
+        )
+
+        for linha in botoes:
+
+            linha_layout = BoxLayout(
+                orientation="horizontal",
+                spacing=dp(7)
+            )
+
+            for texto, tipo in linha:
+
+                botao = BotaoCalculadora(
+                    text=texto,
+                    tipo=tipo
+                )
+
+                if texto == "0":
+
+                    botao.size_hint_x = 2
+
+                else:
+
+                    botao.size_hint_x = 1
+
+                botao.bind(
+                    on_release=self.pressionar
+                )
+
+                linha_layout.add_widget(botao)
+
+            self.grade.add_widget(linha_layout)
+
+        self.add_widget(self.grade)
+
+    # ========================================================
+    # VOLTAR
+    # ========================================================
+
+    def voltar(self, instance):
+
+        if self.voltar_callback:
+            self.voltar_callback()
+
+    # ========================================================
+    # PRESSIONAR
+    # ========================================================
+
+    def pressionar(self, botao):
+
+        valor = botao.text
+
+        if valor == "AC":
+
+            self.expressao = ""
+            self.resultado = ""
+            self.display.text = "0"
+            return
+
+        if valor == "⌫":
+
+            self.expressao = self.expressao[:-1]
+
+            if self.expressao:
+                self.display.text = self.expressao
+            else:
+                self.display.text = "0"
+
+            return
+
+        if valor == "=":
+
+            self.calcular()
+            return
+
+        if valor == "×":
+
+            valor = "*"
+
+        elif valor == "÷":
+
+            valor = "/"
+
+        elif valor == "−":
+
+            valor = "-"
+
+        elif valor == "%":
+
+            valor = "/100"
+
+        self.expressao += valor
+
+        self.display.text = self.expressao
+
+    # ========================================================
+    # CALCULAR
+    # ========================================================
+
+    def calcular(self):
+
+        if not self.expressao:
+            return
+
+        try:
+
+            expressao = self.expressao
+
+            if not re.fullmatch(
+                r"[0-9+\-*/(). ]+",
+                expressao
+            ):
+                raise ValueError
+
+            resultado = eval(
+                expressao,
+                {
+                    "__builtins__": {}
+                },
+                {}
+            )
+
+            if not math.isfinite(float(resultado)):
+                raise ValueError
+
+            self.resultado = formatar_numero(resultado)
+
+            self.display.text = self.resultado
+
+            self.expressao = self.resultado
+
+        except Exception:
+
+            self.display.text = "Erro"
+            self.expressao = ""
+
+
+# ============================================================
+# INTERFACE PRINCIPAL
 # ============================================================
 
 class CalculadoraEquacoes(BoxLayout):
@@ -623,7 +949,6 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.add_widget(titulo)
 
-
         subtitulo = Label(
             text="matemática simplificada",
             font_size=sp(14),
@@ -641,7 +966,6 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.add_widget(subtitulo)
 
-
         self.add_widget(
             LinhaDecorativa(
                 size_hint_y=None,
@@ -649,9 +973,8 @@ class CalculadoraEquacoes(BoxLayout):
             )
         )
 
-
         # ====================================================
-        # SELETOR DE MÓDULO
+        # SELETOR
         # ====================================================
 
         self.seletor = Spinner(
@@ -660,7 +983,8 @@ class CalculadoraEquacoes(BoxLayout):
             values=[
                 "EQUAÇÃO",
                 "ÂNGULO",
-                "ÁREA"
+                "ÁREA",
+                "CALCULADORA"
             ],
 
             size_hint_y=None,
@@ -682,6 +1006,28 @@ class CalculadoraEquacoes(BoxLayout):
             self.seletor
         )
 
+        # ====================================================
+        # ÁREA PRINCIPAL
+        # ====================================================
+
+        self.conteudo = BoxLayout(
+            orientation="vertical",
+            spacing=dp(10)
+        )
+
+        self.add_widget(
+            self.conteudo
+        )
+
+        self.criar_interface_normal()
+
+    # ========================================================
+    # INTERFACE NORMAL
+    # ========================================================
+
+    def criar_interface_normal(self):
+
+        self.conteudo.clear_widgets()
 
         # ====================================================
         # PAINEL DE ENTRADA
@@ -700,14 +1046,12 @@ class CalculadoraEquacoes(BoxLayout):
             spacing=dp(7),
 
             size_hint_y=None,
-
             height=dp(185)
         )
 
-        self.add_widget(
+        self.conteudo.add_widget(
             self.entrada_painel
         )
-
 
         self.titulo_entrada = Label(
             text="DIGITE A EQUAÇÃO",
@@ -729,11 +1073,6 @@ class CalculadoraEquacoes(BoxLayout):
             self.titulo_entrada
         )
 
-
-        # ====================================================
-        # CAMPOS
-        # ====================================================
-
         self.campos = BoxLayout(
             orientation="vertical",
             spacing=dp(7)
@@ -743,9 +1082,7 @@ class CalculadoraEquacoes(BoxLayout):
             self.campos
         )
 
-
         self.criar_modo_equacao()
-
 
         # ====================================================
         # BOTÃO RESOLVER
@@ -761,13 +1098,12 @@ class CalculadoraEquacoes(BoxLayout):
             on_release=self.resolver
         )
 
-        self.add_widget(
+        self.conteudo.add_widget(
             self.botao
         )
 
-
         # ====================================================
-        # BOTÃO MOSTRAR CÁLCULO
+        # BOTÃO CÁLCULO
         # ====================================================
 
         self.botao_calculo = BotaoCalculo(
@@ -786,13 +1122,12 @@ class CalculadoraEquacoes(BoxLayout):
             on_release=self.mostrar_calculo
         )
 
-        self.add_widget(
+        self.conteudo.add_widget(
             self.botao_calculo
         )
 
-
         # ====================================================
-        # PAINEL RESULTADO
+        # RESULTADO
         # ====================================================
 
         self.resultado_painel = Painel(
@@ -814,10 +1149,9 @@ class CalculadoraEquacoes(BoxLayout):
             cor=PAINEL_2
         )
 
-        self.add_widget(
+        self.conteudo.add_widget(
             self.resultado_painel
         )
-
 
         topo = BoxLayout(
             orientation="horizontal",
@@ -826,7 +1160,6 @@ class CalculadoraEquacoes(BoxLayout):
 
             height=dp(22)
         )
-
 
         resultado_titulo = Label(
             text="RESULTADO",
@@ -850,7 +1183,6 @@ class CalculadoraEquacoes(BoxLayout):
         topo.add_widget(
             resultado_titulo
         )
-
 
         self.status = Label(
             text="PRONTO broh",
@@ -877,11 +1209,9 @@ class CalculadoraEquacoes(BoxLayout):
             self.status
         )
 
-
         self.resultado_painel.add_widget(
             topo
         )
-
 
         self.resultado = Label(
             text="Digite uma operação broh",
@@ -905,7 +1235,6 @@ class CalculadoraEquacoes(BoxLayout):
         self.resultado_painel.add_widget(
             self.resultado
         )
-
 
         detalhe = Label(
             text="A resposta aparecerá aqui broh",
@@ -932,9 +1261,8 @@ class CalculadoraEquacoes(BoxLayout):
             detalhe
         )
 
-
         # ====================================================
-        # PAINEL DO CÁLCULO
+        # PAINEL CÁLCULO
         # ====================================================
 
         self.calculo_painel = Painel(
@@ -957,7 +1285,6 @@ class CalculadoraEquacoes(BoxLayout):
 
             cor=PAINEL
         )
-
 
         calculo_titulo = Label(
             text="CÁLCULO",
@@ -986,7 +1313,6 @@ class CalculadoraEquacoes(BoxLayout):
             calculo_titulo
         )
 
-
         self.calculo_label = Label(
             text="",
 
@@ -1008,81 +1334,29 @@ class CalculadoraEquacoes(BoxLayout):
             self.calculo_label
         )
 
-
-        self.add_widget(
+        self.conteudo.add_widget(
             self.calculo_painel
         )
 
+    # ========================================================
+    # CALCULADORA COMUM
+    # ========================================================
 
-        # ====================================================
-        # MARCA D'ÁGUA
-        # ====================================================
+    def criar_calculadora(self):
 
-        marca = Label(
-            text="Produzido por Arthur Fefeira",
+        self.conteudo.clear_widgets()
 
-            font_size=sp(9),
-
-            color=(
-                0.30,
-                0.31,
-                0.34,
-                0.75
-            ),
-
-            size_hint_y=None,
-
-            height=dp(20),
-
-            halign="center",
-
-            valign="middle"
+        calculadora = CalculadoraComum(
+            voltar_callback=self.voltar_da_calculadora
         )
 
-        marca.bind(
-            size=lambda obj, value:
-            setattr(obj, "text_size", value)
+        self.conteudo.add_widget(
+            calculadora
         )
 
-        self.add_widget(
-            marca
-        )
+    def voltar_da_calculadora(self):
 
-
-        # ====================================================
-        # RODAPÉ
-        # ====================================================
-
-        rodape = Label(
-            text="MATEMÁTICA  •  PYTHON + KIVY  •  broh",
-
-            font_size=sp(8),
-
-            color=(
-                0.22,
-                0.23,
-                0.26,
-                1
-            ),
-
-            size_hint_y=None,
-
-            height=dp(15),
-
-            halign="center",
-
-            valign="middle"
-        )
-
-        rodape.bind(
-            size=lambda obj, value:
-            setattr(obj, "text_size", value)
-        )
-
-        self.add_widget(
-            rodape
-        )
-
+        self.seletor.text = "EQUAÇÃO"
 
     # ========================================================
     # LIMPAR CAMPOS
@@ -1092,9 +1366,8 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.campos.clear_widgets()
 
-
     # ========================================================
-    # CRIAR MODO EQUAÇÃO
+    # EQUAÇÃO
     # ========================================================
 
     def criar_modo_equacao(self):
@@ -1126,9 +1399,8 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.entrada_painel.height = dp(135)
 
-
     # ========================================================
-    # CRIAR MODO ÂNGULO
+    # ÂNGULO
     # ========================================================
 
     def criar_modo_angulo(self):
@@ -1139,11 +1411,9 @@ class CalculadoraEquacoes(BoxLayout):
             "INFORME OS DOIS ÂNGULOS CONHECIDOS"
         )
 
-
         linha = BoxLayout(
             spacing=dp(8)
         )
-
 
         self.angulo1 = Campo(
             hint="50°"
@@ -1153,7 +1423,6 @@ class CalculadoraEquacoes(BoxLayout):
             hint="70°"
         )
 
-
         linha.add_widget(
             self.angulo1
         )
@@ -1162,11 +1431,9 @@ class CalculadoraEquacoes(BoxLayout):
             self.angulo2
         )
 
-
         self.campos.add_widget(
             linha
         )
-
 
         info = Label(
             text="O app descobrirá o terceiro ângulo do triângulo.",
@@ -1189,9 +1456,8 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.entrada_painel.height = dp(135)
 
-
     # ========================================================
-    # CRIAR MODO ÁREA
+    # ÁREA
     # ========================================================
 
     def criar_modo_area(self):
@@ -1233,10 +1499,8 @@ class CalculadoraEquacoes(BoxLayout):
             self.figura
         )
 
-
         self.area_campos = BoxLayout(
             orientation="vertical",
-
             spacing=dp(6)
         )
 
@@ -1244,24 +1508,17 @@ class CalculadoraEquacoes(BoxLayout):
             self.area_campos
         )
 
-
         self.criar_campos_area("Quadrado")
 
         self.entrada_painel.height = dp(190)
 
-
     # ========================================================
-    # CAMPOS DA ÁREA
+    # CAMPOS ÁREA
     # ========================================================
 
     def criar_campos_area(self, figura):
 
         self.area_campos.clear_widgets()
-
-
-        # ----------------------------------------------------
-        # QUADRADO
-        # ----------------------------------------------------
 
         if figura == "Quadrado":
 
@@ -1272,13 +1529,6 @@ class CalculadoraEquacoes(BoxLayout):
             self.area_campos.add_widget(
                 self.area_lado
             )
-
-            self.entrada_painel.height = dp(190)
-
-
-        # ----------------------------------------------------
-        # RETÂNGULO
-        # ----------------------------------------------------
 
         elif figura == "Retângulo":
 
@@ -1298,13 +1548,6 @@ class CalculadoraEquacoes(BoxLayout):
                 self.area_altura
             )
 
-            self.entrada_painel.height = dp(190)
-
-
-        # ----------------------------------------------------
-        # TRIÂNGULO
-        # ----------------------------------------------------
-
         elif figura == "Triângulo":
 
             self.area_base = Campo(
@@ -1323,13 +1566,6 @@ class CalculadoraEquacoes(BoxLayout):
                 self.area_altura
             )
 
-            self.entrada_painel.height = dp(190)
-
-
-        # ----------------------------------------------------
-        # CÍRCULO
-        # ----------------------------------------------------
-
         elif figura == "Círculo":
 
             self.area_raio = Campo(
@@ -1339,13 +1575,6 @@ class CalculadoraEquacoes(BoxLayout):
             self.area_campos.add_widget(
                 self.area_raio
             )
-
-            self.entrada_painel.height = dp(190)
-
-
-        # ----------------------------------------------------
-        # PARALELOGRAMO
-        # ----------------------------------------------------
 
         elif figura == "Paralelogramo":
 
@@ -1365,36 +1594,19 @@ class CalculadoraEquacoes(BoxLayout):
                 self.area_altura
             )
 
-            self.entrada_painel.height = dp(190)
-
-
-        # ----------------------------------------------------
-        # TRAPÉZIO
-        # ----------------------------------------------------
-
         elif figura == "Trapézio":
 
-            # Altura fixa para impedir que os campos
-            # sejam esmagados pelo BoxLayout.
-
             self.area_base_maior = Campo(
-                hint="Base maior",
-                size_hint_y=None,
-                height=dp(42)
+                hint="Base maior"
             )
 
             self.area_base_menor = Campo(
-                hint="Base menor",
-                size_hint_y=None,
-                height=dp(42)
+                hint="Base menor"
             )
 
             self.area_altura = Campo(
-                hint="Altura",
-                size_hint_y=None,
-                height=dp(42)
+                hint="Altura"
             )
-
 
             self.area_campos.add_widget(
                 self.area_base_maior
@@ -1408,14 +1620,6 @@ class CalculadoraEquacoes(BoxLayout):
                 self.area_altura
             )
 
-
-            # ------------------------------------------------
-            # AQUI ESTÁ A CORREÇÃO PRINCIPAL
-            # ------------------------------------------------
-
-            self.entrada_painel.height = dp(225)
-
-
     # ========================================================
     # MUDAR FIGURA
     # ========================================================
@@ -1426,12 +1630,18 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.esconder_calculo()
 
-
     # ========================================================
     # MUDAR MÓDULO
     # ========================================================
 
     def mudar_modulo(self, spinner, modulo):
+
+        if modulo == "CALCULADORA":
+
+            self.criar_calculadora()
+            return
+
+        self.criar_interface_normal()
 
         self.esconder_calculo()
 
@@ -1440,7 +1650,6 @@ class CalculadoraEquacoes(BoxLayout):
         self.resultado.color = CLARO
 
         self.status.text = "PRONTO broh"
-
 
         if modulo == "EQUAÇÃO":
 
@@ -1454,9 +1663,8 @@ class CalculadoraEquacoes(BoxLayout):
 
             self.criar_modo_area()
 
-
     # ========================================================
-    # MOSTRAR / ESCONDER CÁLCULO
+    # MOSTRAR CÁLCULO
     # ========================================================
 
     def mostrar_calculo(self, instance):
@@ -1491,25 +1699,26 @@ class CalculadoraEquacoes(BoxLayout):
 
             self.botao_calculo.text = "MOSTRAR CÁLCULO"
 
+    # ========================================================
+    # ESCONDER CÁLCULO
+    # ========================================================
 
     def esconder_calculo(self):
 
         self.calculo_texto = ""
-
         self.calculo_visivel = False
 
-        self.calculo_label.text = ""
+        if hasattr(self, "calculo_label"):
 
-        self.calculo_painel.height = dp(0)
+            self.calculo_label.text = ""
 
-        self.calculo_painel.opacity = 0
+            self.calculo_painel.height = dp(0)
+            self.calculo_painel.opacity = 0
 
-        self.botao_calculo.text = "MOSTRAR CÁLCULO"
+            self.botao_calculo.text = "MOSTRAR CÁLCULO"
 
-        self.botao_calculo.opacity = 0
-
-        self.botao_calculo.disabled = True
-
+            self.botao_calculo.opacity = 0
+            self.botao_calculo.disabled = True
 
     # ========================================================
     # RESOLVER
@@ -1519,7 +1728,6 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.esconder_calculo()
 
-
         # ====================================================
         # EQUAÇÃO
         # ====================================================
@@ -1527,7 +1735,6 @@ class CalculadoraEquacoes(BoxLayout):
         if self.seletor.text == "EQUAÇÃO":
 
             equacao = self.entrada.text.strip()
-
 
             if equacao.lower() == "broh":
 
@@ -1539,12 +1746,10 @@ class CalculadoraEquacoes(BoxLayout):
 
                 return
 
-
             equacao_limpa = equacao.replace(
                 "broh",
                 ""
             ).strip()
-
 
             try:
 
@@ -1572,9 +1777,7 @@ class CalculadoraEquacoes(BoxLayout):
                     self.calculo_texto = calculo
 
                     self.botao_calculo.opacity = 1
-
                     self.botao_calculo.disabled = False
-
 
             except Exception:
 
@@ -1583,7 +1786,6 @@ class CalculadoraEquacoes(BoxLayout):
                 self.resultado.color = VERMELHO
 
                 self.status.text = "ERRO broh"
-
 
         # ====================================================
         # ÂNGULO
@@ -1607,9 +1809,7 @@ class CalculadoraEquacoes(BoxLayout):
                 self.calculo_texto = calculo
 
                 self.botao_calculo.opacity = 1
-
                 self.botao_calculo.disabled = False
-
 
             except Exception:
 
@@ -1618,7 +1818,6 @@ class CalculadoraEquacoes(BoxLayout):
                 self.resultado.color = VERMELHO
 
                 self.status.text = "ERRO broh"
-
 
         # ====================================================
         # ÁREA
@@ -1632,13 +1831,11 @@ class CalculadoraEquacoes(BoxLayout):
 
                 valores = []
 
-
                 if figura == "Quadrado":
 
                     valores = [
                         self.area_lado.text
                     ]
-
 
                 elif figura in (
                     "Retângulo",
@@ -1651,13 +1848,11 @@ class CalculadoraEquacoes(BoxLayout):
                         self.area_altura.text
                     ]
 
-
                 elif figura == "Círculo":
 
                     valores = [
                         self.area_raio.text
                     ]
-
 
                 elif figura == "Trapézio":
 
@@ -1667,18 +1862,15 @@ class CalculadoraEquacoes(BoxLayout):
                         self.area_altura.text
                     ]
 
-
                 valores = [
                     valor.replace(",", ".")
                     for valor in valores
                 ]
 
-
                 resultado, calculo = calcular_area(
                     figura,
                     valores
                 )
-
 
                 self.resultado.text = resultado
 
@@ -1689,9 +1881,7 @@ class CalculadoraEquacoes(BoxLayout):
                 self.calculo_texto = calculo
 
                 self.botao_calculo.opacity = 1
-
                 self.botao_calculo.disabled = False
-
 
             except Exception:
 
