@@ -338,6 +338,8 @@ class Painel(BoxLayout):
 
         super().__init__(**kwargs)
 
+        self.raio = raio
+
         with self.canvas.before:
 
             Color(*cor)
@@ -376,7 +378,7 @@ class Painel(BoxLayout):
             self.y,
             self.width,
             self.height,
-            dp(24)
+            dp(self.raio)
         )
 
 
@@ -645,10 +647,10 @@ class CalculadoraComum(BoxLayout):
             orientation="vertical",
             spacing=dp(8),
             padding=[
-                dp(12),
-                dp(10),
-                dp(12),
-                dp(10)
+                dp(8),
+                dp(6),
+                dp(8),
+                dp(6)
             ],
             **kwargs
         )
@@ -727,7 +729,7 @@ class CalculadoraComum(BoxLayout):
         self.add_widget(self.display)
 
         # ====================================================
-        # LINHA DE BOTÕES
+        # BOTÕES
         # ====================================================
 
         botoes = [
@@ -782,11 +784,8 @@ class CalculadoraComum(BoxLayout):
                 )
 
                 if texto == "0":
-
                     botao.size_hint_x = 2
-
                 else:
-
                     botao.size_hint_x = 1
 
                 botao.bind(
@@ -821,6 +820,7 @@ class CalculadoraComum(BoxLayout):
             self.expressao = ""
             self.resultado = ""
             self.display.text = "0"
+
             return
 
         if valor == "⌫":
@@ -837,22 +837,19 @@ class CalculadoraComum(BoxLayout):
         if valor == "=":
 
             self.calcular()
+
             return
 
         if valor == "×":
-
             valor = "*"
 
         elif valor == "÷":
-
             valor = "/"
 
         elif valor == "−":
-
             valor = "-"
 
         elif valor == "%":
-
             valor = "/100"
 
         self.expressao += valor
@@ -911,16 +908,13 @@ class CalculadoraEquacoes(BoxLayout):
 
         super().__init__(
             orientation="vertical",
-
             spacing=dp(10),
-
             padding=[
                 dp(20),
                 dp(18),
                 dp(20),
                 dp(8)
             ],
-
             **kwargs
         )
 
@@ -1046,7 +1040,7 @@ class CalculadoraEquacoes(BoxLayout):
             spacing=dp(7),
 
             size_hint_y=None,
-            height=dp(185)
+            height=dp(145)
         )
 
         self.conteudo.add_widget(
@@ -1155,23 +1149,16 @@ class CalculadoraEquacoes(BoxLayout):
 
         topo = BoxLayout(
             orientation="horizontal",
-
             size_hint_y=None,
-
             height=dp(22)
         )
 
         resultado_titulo = Label(
             text="RESULTADO",
-
             font_size=sp(11),
-
             bold=True,
-
             color=CINZA,
-
             halign="left",
-
             valign="middle"
         )
 
@@ -1186,17 +1173,11 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.status = Label(
             text="PRONTO broh",
-
             font_size=sp(10),
-
             color=CINZA,
-
             size_hint_x=None,
-
             width=dp(105),
-
             halign="right",
-
             valign="middle"
         )
 
@@ -1215,15 +1196,10 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.resultado = Label(
             text="Digite uma operação broh",
-
             font_size=sp(27),
-
             bold=True,
-
             color=CLARO,
-
             halign="center",
-
             valign="middle"
         )
 
@@ -1238,17 +1214,11 @@ class CalculadoraEquacoes(BoxLayout):
 
         detalhe = Label(
             text="A resposta aparecerá aqui broh",
-
             font_size=sp(10),
-
             color=CINZA,
-
             size_hint_y=None,
-
             height=dp(20),
-
             halign="center",
-
             valign="middle"
         )
 
@@ -1378,7 +1348,9 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.entrada = Campo(
             hint="2x + 6 = 14",
-            text="2x + 6 = 14"
+            text="2x + 6 = 14",
+            size_hint_y=None,
+            height=dp(48)
         )
 
         self.campos.add_widget(
@@ -1412,7 +1384,9 @@ class CalculadoraEquacoes(BoxLayout):
         )
 
         linha = BoxLayout(
-            spacing=dp(8)
+            spacing=dp(8),
+            size_hint_y=None,
+            height=dp(48)
         )
 
         self.angulo1 = Campo(
@@ -1501,7 +1475,7 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.area_campos = BoxLayout(
             orientation="vertical",
-            spacing=dp(6)
+            spacing=dp(7)
         )
 
         self.campos.add_widget(
@@ -1510,7 +1484,7 @@ class CalculadoraEquacoes(BoxLayout):
 
         self.criar_campos_area("Quadrado")
 
-        self.entrada_painel.height = dp(190)
+        self.ajustar_altura_area("Quadrado")
 
     # ========================================================
     # CAMPOS ÁREA
@@ -1523,7 +1497,9 @@ class CalculadoraEquacoes(BoxLayout):
         if figura == "Quadrado":
 
             self.area_lado = Campo(
-                hint="Lado"
+                hint="Lado",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_campos.add_widget(
@@ -1533,11 +1509,15 @@ class CalculadoraEquacoes(BoxLayout):
         elif figura == "Retângulo":
 
             self.area_base = Campo(
-                hint="Base"
+                hint="Base",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_altura = Campo(
-                hint="Altura"
+                hint="Altura",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_campos.add_widget(
@@ -1551,11 +1531,15 @@ class CalculadoraEquacoes(BoxLayout):
         elif figura == "Triângulo":
 
             self.area_base = Campo(
-                hint="Base"
+                hint="Base",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_altura = Campo(
-                hint="Altura"
+                hint="Altura",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_campos.add_widget(
@@ -1569,7 +1553,9 @@ class CalculadoraEquacoes(BoxLayout):
         elif figura == "Círculo":
 
             self.area_raio = Campo(
-                hint="Raio"
+                hint="Raio",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_campos.add_widget(
@@ -1579,11 +1565,15 @@ class CalculadoraEquacoes(BoxLayout):
         elif figura == "Paralelogramo":
 
             self.area_base = Campo(
-                hint="Base"
+                hint="Base",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_altura = Campo(
-                hint="Altura"
+                hint="Altura",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_campos.add_widget(
@@ -1597,15 +1587,21 @@ class CalculadoraEquacoes(BoxLayout):
         elif figura == "Trapézio":
 
             self.area_base_maior = Campo(
-                hint="Base maior"
+                hint="Base maior",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_base_menor = Campo(
-                hint="Base menor"
+                hint="Base menor",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_altura = Campo(
-                hint="Altura"
+                hint="Altura",
+                size_hint_y=None,
+                height=dp(48)
             )
 
             self.area_campos.add_widget(
@@ -1621,12 +1617,41 @@ class CalculadoraEquacoes(BoxLayout):
             )
 
     # ========================================================
+    # AJUSTAR ALTURA DA ÁREA
+    # ========================================================
+
+    def ajustar_altura_area(self, figura):
+
+        if figura == "Quadrado":
+            altura = 145
+
+        elif figura in (
+            "Retângulo",
+            "Triângulo",
+            "Paralelogramo"
+        ):
+            altura = 195
+
+        elif figura == "Círculo":
+            altura = 145
+
+        elif figura == "Trapézio":
+            altura = 250
+
+        else:
+            altura = 190
+
+        self.entrada_painel.height = dp(altura)
+
+    # ========================================================
     # MUDAR FIGURA
     # ========================================================
 
     def mudar_figura(self, spinner, figura):
 
         self.criar_campos_area(figura)
+
+        self.ajustar_altura_area(figura)
 
         self.esconder_calculo()
 
@@ -1639,6 +1664,7 @@ class CalculadoraEquacoes(BoxLayout):
         if modulo == "CALCULADORA":
 
             self.criar_calculadora()
+
             return
 
         self.criar_interface_normal()
