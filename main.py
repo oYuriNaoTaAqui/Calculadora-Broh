@@ -1,4 +1,5 @@
 import re
+import math
 
 from kivy.app import App
 from kivy.core.window import Window
@@ -9,6 +10,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
+from kivy.uix.spinner import Spinner
 
 
 # ============================================================
@@ -34,7 +36,21 @@ VERMELHO = (0.95, 0.30, 0.30, 1)
 
 
 # ============================================================
-# RESOLVER EQUAÇÃO
+# FUNÇÕES AUXILIARES
+# ============================================================
+
+def formatar_numero(valor):
+
+    valor = float(valor)
+
+    if valor.is_integer():
+        return str(int(valor))
+
+    return f"{valor:.8f}".rstrip("0").rstrip(".")
+
+
+# ============================================================
+# EQUAÇÕES
 # ============================================================
 
 def separar_lado(lado):
@@ -74,16 +90,6 @@ def separar_lado(lado):
     return coef_x, constante
 
 
-def formatar_numero(valor):
-
-    valor = float(valor)
-
-    if valor.is_integer():
-        return str(int(valor))
-
-    return f"{valor:.8f}".rstrip("0").rstrip(".")
-
-
 def resolver_equacao(equacao):
 
     equacao = equacao.replace(" ", "").lower()
@@ -105,17 +111,221 @@ def resolver_equacao(equacao):
     coeficiente = a - c
     termo_independente = d - b
 
-    # 0x = 0
     if coeficiente == 0:
 
         if termo_independente == 0:
-            return "Infinitas soluções broh"
+            return "Infinitas soluções broh", ""
 
-        return "Sem solução broh"
+        return "Sem solução broh", ""
 
     x = termo_independente / coeficiente
 
-    return f"x = {formatar_numero(x)} broh"
+    calculo = ""
+
+    if c == 0:
+
+        calculo += (
+            f"{formatar_numero(a)}x + "
+            f"{formatar_numero(b)} = "
+            f"{formatar_numero(d)}\n"
+        )
+
+    else:
+
+        calculo += (
+            f"{formatar_numero(a)}x + "
+            f"{formatar_numero(b)} = "
+            f"{formatar_numero(c)}x + "
+            f"{formatar_numero(d)}\n"
+        )
+
+    if c != 0:
+
+        calculo += (
+            f"{formatar_numero(a - c)}x = "
+            f"{formatar_numero(d - b)}\n"
+        )
+
+    else:
+
+        calculo += (
+            f"{formatar_numero(a)}x = "
+            f"{formatar_numero(d - b)}\n"
+        )
+
+    calculo += (
+        f"x = {formatar_numero(d - b)} / "
+        f"{formatar_numero(a - c)}\n"
+    )
+
+    calculo += f"x = {formatar_numero(x)}"
+
+    return f"x = {formatar_numero(x)} broh", calculo
+
+
+# ============================================================
+# ÂNGULOS
+# ============================================================
+
+def resolver_angulo(angulo1, angulo2):
+
+    angulo1 = float(
+        angulo1.replace("°", "").replace(",", ".").strip()
+    )
+
+    angulo2 = float(
+        angulo2.replace("°", "").replace(",", ".").strip()
+    )
+
+    if angulo1 <= 0 or angulo2 <= 0:
+        raise ValueError
+
+    if angulo1 >= 180 or angulo2 >= 180:
+        raise ValueError
+
+    terceiro = 180 - angulo1 - angulo2
+
+    if terceiro <= 0:
+        raise ValueError
+
+    calculo = (
+        "A soma dos ângulos de um triângulo é 180°\n\n"
+        f"x = 180° - {formatar_numero(angulo1)}° - "
+        f"{formatar_numero(angulo2)}°\n"
+        f"x = {formatar_numero(terceiro)}°"
+    )
+
+    resultado = f"x = {formatar_numero(terceiro)}° broh"
+
+    return resultado, calculo
+
+
+# ============================================================
+# ÁREAS
+# ============================================================
+
+def calcular_area(figura, valores):
+
+    if figura == "Quadrado":
+
+        lado = float(valores[0])
+
+        if lado <= 0:
+            raise ValueError
+
+        area = lado ** 2
+
+        calculo = (
+            "Fórmula:\n"
+            "A = lado²\n\n"
+            f"A = {formatar_numero(lado)}²\n"
+            f"A = {formatar_numero(area)}"
+        )
+
+
+    elif figura == "Retângulo":
+
+        base = float(valores[0])
+        altura = float(valores[1])
+
+        if base <= 0 or altura <= 0:
+            raise ValueError
+
+        area = base * altura
+
+        calculo = (
+            "Fórmula:\n"
+            "A = base × altura\n\n"
+            f"A = {formatar_numero(base)} × "
+            f"{formatar_numero(altura)}\n"
+            f"A = {formatar_numero(area)}"
+        )
+
+
+    elif figura == "Triângulo":
+
+        base = float(valores[0])
+        altura = float(valores[1])
+
+        if base <= 0 or altura <= 0:
+            raise ValueError
+
+        area = (base * altura) / 2
+
+        calculo = (
+            "Fórmula:\n"
+            "A = (base × altura) / 2\n\n"
+            f"A = ({formatar_numero(base)} × "
+            f"{formatar_numero(altura)}) / 2\n"
+            f"A = {formatar_numero(base * altura)} / 2\n"
+            f"A = {formatar_numero(area)}"
+        )
+
+
+    elif figura == "Círculo":
+
+        raio = float(valores[0])
+
+        if raio <= 0:
+            raise ValueError
+
+        area = math.pi * raio ** 2
+
+        calculo = (
+            "Fórmula:\n"
+            "A = π × r²\n\n"
+            f"A = π × {formatar_numero(raio)}²\n"
+            f"A = π × {formatar_numero(raio ** 2)}\n"
+            f"A ≈ {formatar_numero(area)}"
+        )
+
+
+    elif figura == "Paralelogramo":
+
+        base = float(valores[0])
+        altura = float(valores[1])
+
+        if base <= 0 or altura <= 0:
+            raise ValueError
+
+        area = base * altura
+
+        calculo = (
+            "Fórmula:\n"
+            "A = base × altura\n\n"
+            f"A = {formatar_numero(base)} × "
+            f"{formatar_numero(altura)}\n"
+            f"A = {formatar_numero(area)}"
+        )
+
+
+    elif figura == "Trapézio":
+
+        base_maior = float(valores[0])
+        base_menor = float(valores[1])
+        altura = float(valores[2])
+
+        if base_maior <= 0 or base_menor <= 0 or altura <= 0:
+            raise ValueError
+
+        area = ((base_maior + base_menor) * altura) / 2
+
+        calculo = (
+            "Fórmula:\n"
+            "A = ((B + b) × h) / 2\n\n"
+            f"A = (({formatar_numero(base_maior)} + "
+            f"{formatar_numero(base_menor)}) × "
+            f"{formatar_numero(altura)}) / 2\n"
+            f"A = ({formatar_numero(base_maior + base_menor)} × "
+            f"{formatar_numero(altura)}) / 2\n"
+            f"A = {formatar_numero(area)}"
+        )
+
+
+    else:
+        raise ValueError
+
+    return f"Área = {formatar_numero(area)} broh", calculo
 
 
 # ============================================================
@@ -177,18 +387,18 @@ class Painel(BoxLayout):
 
 
 # ============================================================
-# CAMPO DE EQUAÇÃO
+# CAMPO
 # ============================================================
 
-class CampoEquacao(TextInput):
+class Campo(TextInput):
 
-    def __init__(self, **kwargs):
+    def __init__(self, hint="", **kwargs):
 
         super().__init__(**kwargs)
 
         self.background_normal = ""
         self.background_active = ""
-        self.background_color = (0, 0, 0, 0)
+        self.background_color = CAMPO
 
         self.foreground_color = BRANCO
         self.cursor_color = BRANCO
@@ -200,26 +410,24 @@ class CampoEquacao(TextInput):
             0.25
         )
 
-        self.font_size = sp(25)
+        self.font_size = sp(18)
 
         self.multiline = False
         self.halign = "center"
 
         self.padding = [
-            dp(15),
-            dp(13),
-            dp(15),
-            dp(13)
+            dp(10),
+            dp(10),
+            dp(10),
+            dp(10)
         ]
 
-        self.hint_text = "2x + 6 = 14"
+        self.hint_text = hint
         self.hint_text_color = CINZA
-
-        self.write_tab = False
 
 
 # ============================================================
-# BOTÃO RESOLVER
+# BOTÃO PRINCIPAL
 # ============================================================
 
 class BotaoResolver(Button):
@@ -250,16 +458,45 @@ class BotaoResolver(Button):
     def mudar_estado(self, instance, estado):
 
         if estado == "down":
-
             self.background_color = DESTAQUE_DOWN
-
         else:
-
             self.background_color = DESTAQUE
 
 
 # ============================================================
-# BOTÃO DE EXEMPLO
+# BOTÃO CÁLCULO
+# ============================================================
+
+class BotaoCalculo(Button):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+        self.background_normal = ""
+        self.background_down = ""
+
+        self.background_color = PAINEL_2
+
+        self.color = CLARO
+
+        self.font_size = sp(12)
+        self.bold = True
+
+        self.bind(
+            state=self.mudar_estado
+        )
+
+    def mudar_estado(self, instance, estado):
+
+        if estado == "down":
+            self.background_color = CINZA_ESCURO
+        else:
+            self.background_color = PAINEL_2
+
+
+# ============================================================
+# BOTÃO EXEMPLO
 # ============================================================
 
 class BotaoExemplo(Button):
@@ -284,11 +521,8 @@ class BotaoExemplo(Button):
     def mudar_estado(self, instance, estado):
 
         if estado == "down":
-
             self.background_color = CINZA_ESCURO
-
         else:
-
             self.background_color = PAINEL_2
 
 
@@ -352,38 +586,33 @@ class CalculadoraEquacoes(BoxLayout):
         super().__init__(
             orientation="vertical",
 
-            spacing=dp(12),
+            spacing=dp(10),
 
             padding=[
                 dp(20),
-                dp(22),
+                dp(18),
                 dp(20),
-                dp(10)
+                dp(8)
             ],
 
             **kwargs
         )
 
+        self.calculo_texto = ""
+        self.calculo_visivel = False
+
         # ====================================================
-        # CABEÇALHO
+        # TÍTULO
         # ====================================================
 
         titulo = Label(
-
             text="CALCULADORA broh",
-
             font_size=sp(29),
-
             bold=True,
-
             color=BRANCO,
-
             size_hint_y=None,
-
             height=dp(40),
-
             halign="left",
-
             valign="middle"
         )
 
@@ -396,19 +625,12 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         subtitulo = Label(
-
-            text="equações do 1º grau",
-
+            text="matemática simplificada",
             font_size=sp(14),
-
             color=CINZA,
-
             size_hint_y=None,
-
-            height=dp(25),
-
+            height=dp(24),
             halign="left",
-
             valign="middle"
         )
 
@@ -421,223 +643,118 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         self.add_widget(
-
             LinhaDecorativa(
-
                 size_hint_y=None,
-
                 height=dp(8)
             )
         )
 
 
         # ====================================================
-        # PAINEL DA EQUAÇÃO
+        # SELETOR DE MÓDULO
         # ====================================================
 
-        painel = Painel(
+        self.seletor = Spinner(
+            text="EQUAÇÃO",
 
+            values=[
+                "EQUAÇÃO",
+                "ÂNGULO",
+                "ÁREA"
+            ],
+
+            size_hint_y=None,
+            height=dp(45),
+
+            background_normal="",
+            background_color=PAINEL_2,
+
+            color=BRANCO,
+
+            font_size=sp(14)
+        )
+
+        self.seletor.bind(
+            text=self.mudar_modulo
+        )
+
+        self.add_widget(
+            self.seletor
+        )
+
+
+        # ====================================================
+        # PAINEL DE ENTRADA
+        # ====================================================
+
+        self.entrada_painel = Painel(
             orientation="vertical",
 
             padding=[
-                dp(17),
                 dp(15),
-                dp(17),
-                dp(15)
+                dp(12),
+                dp(15),
+                dp(12)
             ],
 
             spacing=dp(7),
 
             size_hint_y=None,
 
-            height=dp(142)
+            height=dp(185)
         )
 
-        self.add_widget(painel)
+        self.add_widget(
+            self.entrada_painel
+        )
 
 
-        label_equacao = Label(
-
-            text="DIGITE A EQUAÇÃO broh",
-
+        self.titulo_entrada = Label(
+            text="DIGITE A EQUAÇÃO",
             font_size=sp(11),
-
             bold=True,
-
             color=CINZA,
-
             size_hint_y=None,
-
             height=dp(22),
-
             halign="left",
-
             valign="middle"
         )
 
-        label_equacao.bind(
+        self.titulo_entrada.bind(
             size=lambda obj, value:
             setattr(obj, "text_size", value)
         )
 
-        painel.add_widget(label_equacao)
-
-
-        # ====================================================
-        # CAMPO INTERNO
-        # ====================================================
-
-        campo_card = BoxLayout(
-
-            padding=[
-                dp(4),
-                dp(3),
-                dp(4),
-                dp(3)
-            ],
-
-            size_hint_y=None,
-
-            height=dp(72)
-        )
-
-        with campo_card.canvas.before:
-
-            Color(*CAMPO)
-
-            self.campo_fundo = RoundedRectangle(
-
-                pos=campo_card.pos,
-
-                size=campo_card.size,
-
-                radius=[dp(20)]
-            )
-
-            Color(
-                0.16,
-                0.17,
-                0.19,
-                1
-            )
-
-            self.campo_contorno = Line(
-
-                rounded_rectangle=(
-                    campo_card.x,
-                    campo_card.y,
-                    campo_card.width,
-                    campo_card.height,
-                    dp(20)
-                ),
-
-                width=0.8
-            )
-
-        campo_card.bind(
-            pos=self.atualizar_campo,
-            size=self.atualizar_campo
-        )
-
-
-        self.entrada = CampoEquacao(
-
-            text="2x + 6 = 14"
-        )
-
-        campo_card.add_widget(
-            self.entrada
-        )
-
-        painel.add_widget(
-            campo_card
+        self.entrada_painel.add_widget(
+            self.titulo_entrada
         )
 
 
         # ====================================================
-        # EXEMPLOS
+        # CAMPOS
         # ====================================================
 
-        exemplos_titulo = Label(
-
-            text="EXEMPLOS",
-
-            font_size=sp(10),
-
-            color=CINZA,
-
-            size_hint_y=None,
-
-            height=dp(18),
-
-            halign="left",
-
-            valign="middle"
+        self.campos = BoxLayout(
+            orientation="vertical",
+            spacing=dp(7)
         )
 
-        exemplos_titulo.bind(
-            size=lambda obj, value:
-            setattr(obj, "text_size", value)
-        )
-
-        self.add_widget(
-            exemplos_titulo
+        self.entrada_painel.add_widget(
+            self.campos
         )
 
 
-        exemplos = BoxLayout(
-
-            spacing=dp(8),
-
-            size_hint_y=None,
-
-            height=dp(34)
-        )
-
-
-        exemplo1 = BotaoExemplo(
-            text="2x + 6 = 14"
-        )
-
-        exemplo2 = BotaoExemplo(
-            text="3x - 9 = 0"
-        )
-
-
-        exemplo1.bind(
-            on_release=self.usar_exemplo
-        )
-
-        exemplo2.bind(
-            on_release=self.usar_exemplo
-        )
-
-
-        exemplos.add_widget(
-            exemplo1
-        )
-
-        exemplos.add_widget(
-            exemplo2
-        )
-
-
-        self.add_widget(
-            exemplos
-        )
+        self.criar_modo_equacao()
 
 
         # ====================================================
-        # BOTÃO PRINCIPAL
+        # BOTÃO RESOLVER
         # ====================================================
 
         self.botao = BotaoResolver(
-
             text="RESOLVER   →   broh",
-
             size_hint_y=None,
-
-            height=dp(62)
+            height=dp(58)
         )
 
         self.botao.bind(
@@ -650,25 +767,49 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         # ====================================================
-        # RESULTADO
+        # BOTÃO MOSTRAR CÁLCULO
+        # ====================================================
+
+        self.botao_calculo = BotaoCalculo(
+            text="MOSTRAR CÁLCULO",
+
+            size_hint_y=None,
+
+            height=dp(40),
+
+            opacity=0,
+
+            disabled=True
+        )
+
+        self.botao_calculo.bind(
+            on_release=self.mostrar_calculo
+        )
+
+        self.add_widget(
+            self.botao_calculo
+        )
+
+
+        # ====================================================
+        # PAINEL RESULTADO
         # ====================================================
 
         self.resultado_painel = Painel(
-
             orientation="vertical",
 
             padding=[
                 dp(18),
-                dp(14),
+                dp(12),
                 dp(18),
-                dp(14)
+                dp(12)
             ],
 
             spacing=dp(3),
 
             size_hint_y=None,
 
-            height=dp(158),
+            height=dp(145),
 
             cor=PAINEL_2
         )
@@ -679,7 +820,6 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         topo = BoxLayout(
-
             orientation="horizontal",
 
             size_hint_y=None,
@@ -689,7 +829,6 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         resultado_titulo = Label(
-
             text="RESULTADO",
 
             font_size=sp(11),
@@ -714,7 +853,6 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         self.status = Label(
-
             text="PRONTO broh",
 
             font_size=sp(10),
@@ -723,7 +861,7 @@ class CalculadoraEquacoes(BoxLayout):
 
             size_hint_x=None,
 
-            width=dp(82),
+            width=dp(105),
 
             halign="right",
 
@@ -746,10 +884,9 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         self.resultado = Label(
+            text="Digite uma operação broh",
 
-            text="Digite uma equação broh",
-
-            font_size=sp(31),
+            font_size=sp(27),
 
             bold=True,
 
@@ -771,7 +908,6 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         detalhe = Label(
-
             text="A resposta aparecerá aqui broh",
 
             font_size=sp(10),
@@ -780,7 +916,7 @@ class CalculadoraEquacoes(BoxLayout):
 
             size_hint_y=None,
 
-            height=dp(21),
+            height=dp(20),
 
             halign="center",
 
@@ -798,11 +934,91 @@ class CalculadoraEquacoes(BoxLayout):
 
 
         # ====================================================
+        # PAINEL DO CÁLCULO
+        # ====================================================
+
+        self.calculo_painel = Painel(
+            orientation="vertical",
+
+            padding=[
+                dp(18),
+                dp(12),
+                dp(18),
+                dp(12)
+            ],
+
+            spacing=dp(5),
+
+            size_hint_y=None,
+
+            height=dp(0),
+
+            opacity=0,
+
+            cor=PAINEL
+        )
+
+
+        calculo_titulo = Label(
+            text="CÁLCULO",
+
+            font_size=sp(11),
+
+            bold=True,
+
+            color=CINZA,
+
+            size_hint_y=None,
+
+            height=dp(22),
+
+            halign="left",
+
+            valign="middle"
+        )
+
+        calculo_titulo.bind(
+            size=lambda obj, value:
+            setattr(obj, "text_size", value)
+        )
+
+        self.calculo_painel.add_widget(
+            calculo_titulo
+        )
+
+
+        self.calculo_label = Label(
+            text="",
+
+            font_size=sp(15),
+
+            color=CLARO,
+
+            halign="left",
+
+            valign="middle"
+        )
+
+        self.calculo_label.bind(
+            size=lambda obj, value:
+            setattr(obj, "text_size", value)
+        )
+
+        self.calculo_painel.add_widget(
+            self.calculo_label
+        )
+
+
+        self.add_widget(
+            self.calculo_painel
+        )
+
+
+        # ====================================================
         # MARCA D'ÁGUA
         # ====================================================
 
         marca = Label(
-
             text="Produzido por Arthur Fefeira",
 
             font_size=sp(9),
@@ -816,7 +1032,7 @@ class CalculadoraEquacoes(BoxLayout):
 
             size_hint_y=None,
 
-            height=dp(22),
+            height=dp(20),
 
             halign="center",
 
@@ -838,8 +1054,7 @@ class CalculadoraEquacoes(BoxLayout):
         # ====================================================
 
         rodape = Label(
-
-            text="1º GRAU  •  PYTHON + KIVY  •  broh",
+            text="MATEMÁTICA  •  PYTHON + KIVY  •  broh",
 
             font_size=sp(8),
 
@@ -852,7 +1067,7 @@ class CalculadoraEquacoes(BoxLayout):
 
             size_hint_y=None,
 
-            height=dp(16),
+            height=dp(15),
 
             halign="center",
 
@@ -870,42 +1085,430 @@ class CalculadoraEquacoes(BoxLayout):
 
 
     # ========================================================
-    # ATUALIZAR CAMPO
+    # LIMPAR CAMPOS
     # ========================================================
 
-    def atualizar_campo(self, instance, *args):
+    def limpar_campos(self):
 
-        self.campo_fundo.pos = instance.pos
+        self.campos.clear_widgets()
 
-        self.campo_fundo.size = instance.size
 
-        self.campo_contorno.rounded_rectangle = (
+    # ========================================================
+    # CRIAR MODO EQUAÇÃO
+    # ========================================================
 
-            instance.x,
+    def criar_modo_equacao(self):
 
-            instance.y,
+        self.limpar_campos()
 
-            instance.width,
+        self.titulo_entrada.text = "DIGITE A EQUAÇÃO"
 
-            instance.height,
+        self.entrada = Campo(
+            hint="2x + 6 = 14",
+            text="2x + 6 = 14"
+        )
 
-            dp(20)
+        self.campos.add_widget(
+            self.entrada
+        )
+
+        exemplo = Label(
+            text="Exemplo: 2x + 6 = 14",
+            font_size=sp(10),
+            color=CINZA,
+            size_hint_y=None,
+            height=dp(20)
+        )
+
+        self.campos.add_widget(
+            exemplo
+        )
+
+        self.entrada_painel.height = dp(135)
+
+
+    # ========================================================
+    # CRIAR MODO ÂNGULO
+    # ========================================================
+
+    def criar_modo_angulo(self):
+
+        self.limpar_campos()
+
+        self.titulo_entrada.text = (
+            "INFORME OS DOIS ÂNGULOS CONHECIDOS"
         )
 
 
+        linha = BoxLayout(
+            spacing=dp(8)
+        )
+
+
+        self.angulo1 = Campo(
+            hint="50°"
+        )
+
+        self.angulo2 = Campo(
+            hint="70°"
+        )
+
+
+        linha.add_widget(
+            self.angulo1
+        )
+
+        linha.add_widget(
+            self.angulo2
+        )
+
+
+        self.campos.add_widget(
+            linha
+        )
+
+
+        info = Label(
+            text="O app descobrirá o terceiro ângulo do triângulo.",
+            font_size=sp(10),
+            color=CINZA,
+            size_hint_y=None,
+            height=dp(25),
+            halign="center",
+            valign="middle"
+        )
+
+        info.bind(
+            size=lambda obj, value:
+            setattr(obj, "text_size", value)
+        )
+
+        self.campos.add_widget(
+            info
+        )
+
+        self.entrada_painel.height = dp(135)
+
+
     # ========================================================
-    # USAR EXEMPLO
+    # CRIAR MODO ÁREA
     # ========================================================
 
-    def usar_exemplo(self, button):
+    def criar_modo_area(self):
 
-        self.entrada.text = button.text
+        self.limpar_campos()
 
-        self.resultado.text = "Pronto broh"
+        self.titulo_entrada.text = "ESCOLHA A FIGURA"
+
+        self.figura = Spinner(
+            text="Quadrado",
+
+            values=[
+                "Quadrado",
+                "Retângulo",
+                "Triângulo",
+                "Círculo",
+                "Paralelogramo",
+                "Trapézio"
+            ],
+
+            size_hint_y=None,
+
+            height=dp(42),
+
+            background_normal="",
+
+            background_color=CAMPO,
+
+            color=BRANCO,
+
+            font_size=sp(14)
+        )
+
+        self.figura.bind(
+            text=self.mudar_figura
+        )
+
+        self.campos.add_widget(
+            self.figura
+        )
+
+
+        self.area_campos = BoxLayout(
+            orientation="vertical",
+
+            spacing=dp(6)
+        )
+
+        self.campos.add_widget(
+            self.area_campos
+        )
+
+
+        self.criar_campos_area("Quadrado")
+
+        self.entrada_painel.height = dp(190)
+
+
+    # ========================================================
+    # CAMPOS DA ÁREA
+    # ========================================================
+
+    def criar_campos_area(self, figura):
+
+        self.area_campos.clear_widgets()
+
+
+        # ----------------------------------------------------
+        # QUADRADO
+        # ----------------------------------------------------
+
+        if figura == "Quadrado":
+
+            self.area_lado = Campo(
+                hint="Lado"
+            )
+
+            self.area_campos.add_widget(
+                self.area_lado
+            )
+
+            self.entrada_painel.height = dp(190)
+
+
+        # ----------------------------------------------------
+        # RETÂNGULO
+        # ----------------------------------------------------
+
+        elif figura == "Retângulo":
+
+            self.area_base = Campo(
+                hint="Base"
+            )
+
+            self.area_altura = Campo(
+                hint="Altura"
+            )
+
+            self.area_campos.add_widget(
+                self.area_base
+            )
+
+            self.area_campos.add_widget(
+                self.area_altura
+            )
+
+            self.entrada_painel.height = dp(190)
+
+
+        # ----------------------------------------------------
+        # TRIÂNGULO
+        # ----------------------------------------------------
+
+        elif figura == "Triângulo":
+
+            self.area_base = Campo(
+                hint="Base"
+            )
+
+            self.area_altura = Campo(
+                hint="Altura"
+            )
+
+            self.area_campos.add_widget(
+                self.area_base
+            )
+
+            self.area_campos.add_widget(
+                self.area_altura
+            )
+
+            self.entrada_painel.height = dp(190)
+
+
+        # ----------------------------------------------------
+        # CÍRCULO
+        # ----------------------------------------------------
+
+        elif figura == "Círculo":
+
+            self.area_raio = Campo(
+                hint="Raio"
+            )
+
+            self.area_campos.add_widget(
+                self.area_raio
+            )
+
+            self.entrada_painel.height = dp(190)
+
+
+        # ----------------------------------------------------
+        # PARALELOGRAMO
+        # ----------------------------------------------------
+
+        elif figura == "Paralelogramo":
+
+            self.area_base = Campo(
+                hint="Base"
+            )
+
+            self.area_altura = Campo(
+                hint="Altura"
+            )
+
+            self.area_campos.add_widget(
+                self.area_base
+            )
+
+            self.area_campos.add_widget(
+                self.area_altura
+            )
+
+            self.entrada_painel.height = dp(190)
+
+
+        # ----------------------------------------------------
+        # TRAPÉZIO
+        # ----------------------------------------------------
+
+        elif figura == "Trapézio":
+
+            # Altura fixa para impedir que os campos
+            # sejam esmagados pelo BoxLayout.
+
+            self.area_base_maior = Campo(
+                hint="Base maior",
+                size_hint_y=None,
+                height=dp(42)
+            )
+
+            self.area_base_menor = Campo(
+                hint="Base menor",
+                size_hint_y=None,
+                height=dp(42)
+            )
+
+            self.area_altura = Campo(
+                hint="Altura",
+                size_hint_y=None,
+                height=dp(42)
+            )
+
+
+            self.area_campos.add_widget(
+                self.area_base_maior
+            )
+
+            self.area_campos.add_widget(
+                self.area_base_menor
+            )
+
+            self.area_campos.add_widget(
+                self.area_altura
+            )
+
+
+            # ------------------------------------------------
+            # AQUI ESTÁ A CORREÇÃO PRINCIPAL
+            # ------------------------------------------------
+
+            self.entrada_painel.height = dp(225)
+
+
+    # ========================================================
+    # MUDAR FIGURA
+    # ========================================================
+
+    def mudar_figura(self, spinner, figura):
+
+        self.criar_campos_area(figura)
+
+        self.esconder_calculo()
+
+
+    # ========================================================
+    # MUDAR MÓDULO
+    # ========================================================
+
+    def mudar_modulo(self, spinner, modulo):
+
+        self.esconder_calculo()
+
+        self.resultado.text = "Digite os valores broh"
 
         self.resultado.color = CLARO
 
-        self.status.text = "EXEMPLO broh"
+        self.status.text = "PRONTO broh"
+
+
+        if modulo == "EQUAÇÃO":
+
+            self.criar_modo_equacao()
+
+        elif modulo == "ÂNGULO":
+
+            self.criar_modo_angulo()
+
+        elif modulo == "ÁREA":
+
+            self.criar_modo_area()
+
+
+    # ========================================================
+    # MOSTRAR / ESCONDER CÁLCULO
+    # ========================================================
+
+    def mostrar_calculo(self, instance):
+
+        if not self.calculo_texto:
+            return
+
+        self.calculo_visivel = not self.calculo_visivel
+
+        if self.calculo_visivel:
+
+            self.calculo_label.text = self.calculo_texto
+
+            linhas = self.calculo_texto.count("\n") + 1
+
+            altura = max(
+                dp(130),
+                dp(30) * linhas + dp(45)
+            )
+
+            self.calculo_painel.height = altura
+
+            self.calculo_painel.opacity = 1
+
+            self.botao_calculo.text = "OCULTAR CÁLCULO"
+
+        else:
+
+            self.calculo_painel.height = dp(0)
+
+            self.calculo_painel.opacity = 0
+
+            self.botao_calculo.text = "MOSTRAR CÁLCULO"
+
+
+    def esconder_calculo(self):
+
+        self.calculo_texto = ""
+
+        self.calculo_visivel = False
+
+        self.calculo_label.text = ""
+
+        self.calculo_painel.height = dp(0)
+
+        self.calculo_painel.opacity = 0
+
+        self.botao_calculo.text = "MOSTRAR CÁLCULO"
+
+        self.botao_calculo.opacity = 0
+
+        self.botao_calculo.disabled = True
 
 
     # ========================================================
@@ -914,69 +1517,189 @@ class CalculadoraEquacoes(BoxLayout):
 
     def resolver(self, instance):
 
-        equacao = self.entrada.text.strip()
+        self.esconder_calculo()
 
 
         # ====================================================
-        # EASTER EGG 👀
+        # EQUAÇÃO
         # ====================================================
 
-        if equacao.lower() == "broh":
+        if self.seletor.text == "EQUAÇÃO":
 
-            self.resultado.text = "Arthur broh supremo"
-
-            self.resultado.color = DESTAQUE
-
-            self.status.text = "EASTER EGG broh"
-
-            return
+            equacao = self.entrada.text.strip()
 
 
-        # ====================================================
-        # RESOLUÇÃO NORMAL
-        # ====================================================
+            if equacao.lower() == "broh":
 
-        equacao_limpa = equacao.replace(
-            "broh",
-            ""
-        ).strip()
-
-
-        try:
-
-            resultado = resolver_equacao(
-                equacao_limpa
-            )
-
-            self.resultado.text = resultado
-
-
-            if resultado in (
-
-                "Sem solução broh",
-
-                "Infinitas soluções broh"
-            ):
+                self.resultado.text = "Arthur broh supremo"
 
                 self.resultado.color = DESTAQUE
 
-                self.status.text = "ATENÇÃO broh"
+                self.status.text = "EASTER EGG broh"
+
+                return
 
 
-            else:
+            equacao_limpa = equacao.replace(
+                "broh",
+                ""
+            ).strip()
+
+
+            try:
+
+                resultado, calculo = resolver_equacao(
+                    equacao_limpa
+                )
+
+                self.resultado.text = resultado
+
+                if resultado in (
+                    "Sem solução broh",
+                    "Infinitas soluções broh"
+                ):
+
+                    self.resultado.color = DESTAQUE
+
+                    self.status.text = "ATENÇÃO broh"
+
+                else:
+
+                    self.resultado.color = VERDE
+
+                    self.status.text = "RESOLVIDO broh"
+
+                    self.calculo_texto = calculo
+
+                    self.botao_calculo.opacity = 1
+
+                    self.botao_calculo.disabled = False
+
+
+            except Exception:
+
+                self.resultado.text = "Equação inválida broh"
+
+                self.resultado.color = VERMELHO
+
+                self.status.text = "ERRO broh"
+
+
+        # ====================================================
+        # ÂNGULO
+        # ====================================================
+
+        elif self.seletor.text == "ÂNGULO":
+
+            try:
+
+                resultado, calculo = resolver_angulo(
+                    self.angulo1.text,
+                    self.angulo2.text
+                )
+
+                self.resultado.text = resultado
 
                 self.resultado.color = VERDE
 
                 self.status.text = "RESOLVIDO broh"
 
+                self.calculo_texto = calculo
 
-        except Exception:
+                self.botao_calculo.opacity = 1
 
-            self.resultado.text = "Equação inválida broh"
+                self.botao_calculo.disabled = False
 
-            self.resultado.color = VERMELHO
 
-            self.status.text = "ERRO broh"
+            except Exception:
+
+                self.resultado.text = "Ângulos inválidos broh"
+
+                self.resultado.color = VERMELHO
+
+                self.status.text = "ERRO broh"
+
+
+        # ====================================================
+        # ÁREA
+        # ====================================================
+
+        elif self.seletor.text == "ÁREA":
+
+            try:
+
+                figura = self.figura.text
+
+                valores = []
+
+
+                if figura == "Quadrado":
+
+                    valores = [
+                        self.area_lado.text
+                    ]
+
+
+                elif figura in (
+                    "Retângulo",
+                    "Triângulo",
+                    "Paralelogramo"
+                ):
+
+                    valores = [
+                        self.area_base.text,
+                        self.area_altura.text
+                    ]
+
+
+                elif figura == "Círculo":
+
+                    valores = [
+                        self.area_raio.text
+                    ]
+
+
+                elif figura == "Trapézio":
+
+                    valores = [
+                        self.area_base_maior.text,
+                        self.area_base_menor.text,
+                        self.area_altura.text
+                    ]
+
+
+                valores = [
+                    valor.replace(",", ".")
+                    for valor in valores
+                ]
+
+
+                resultado, calculo = calcular_area(
+                    figura,
+                    valores
+                )
+
+
+                self.resultado.text = resultado
+
+                self.resultado.color = VERDE
+
+                self.status.text = "RESOLVIDO broh"
+
+                self.calculo_texto = calculo
+
+                self.botao_calculo.opacity = 1
+
+                self.botao_calculo.disabled = False
+
+
+            except Exception:
+
+                self.resultado.text = "Valores inválidos broh"
+
+                self.resultado.color = VERMELHO
+
+                self.status.text = "ERRO broh"
 
 
 # ============================================================
